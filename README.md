@@ -89,40 +89,34 @@ SELECT * FROM market_data;
 ## Scaling: How would your architecture change if the data volume increased to 1 billion events per day? (e.g., Kafka, Spark, or Cloud-native tools).
 
 At this scale, the current setup (API + ETL + single database) won’t handle the load. So we redesign it:
-Add Apache Kafka between API and ETL to handle high data volume. Data is split into partitions (e.g., by instrument), which allows parallel processing.
-Replace simple polling with Apache Spark Structured Streaming or Apache Flink to process data in real-time with built-in fault tolerance.
-Store data in layers:
+* Add Apache Kafka between API and ETL to handle high data volume. Data is split into partitions (e.g., by instrument), which allows parallel processing.
+* Replace simple polling with Apache Spark Structured Streaming or Apache Flink to process data in real-time with built-in fault tolerance.
+* Store data in layers:
 Hot data → fast databases like ClickHouse/TimescaleDB
 Cold data → cloud storage like S3 (for analytics)
-Use a schema registry to validate data format before processing.
-Deduplication is handled earlier in the pipeline using streaming guarantees (exactly-once processing).
+* Use a schema registry to validate data format before processing.
+* Deduplication is handled earlier in the pipeline using streaming guarantees (exactly-once processing).
 
 ---
 
 ## Monitoring: How would you implement "Health Checks" to ensure the pipeline is running correctly in a production environment?
 
 We monitor the pipeline at 3 levels:
-Pipeline heartbeat:
-Track the last successful run time. If the pipeline hasn’t run for a while → trigger alert.
-Data freshness check:
-Query latest record timestamp from DB. If data is not updating → pipeline is stuck.
-Data quality check:
-Monitor how many records fail validation. Sudden spike → upstream data issue.
-Additionally: We can Use dashboards (e.g., Grafana) to monitor CPU, memory, DB connections.
+* Pipeline heartbeat:- Track the last successful run time. If the pipeline hasn’t run for a while → trigger alert.
+* Data freshness check:- Query latest record timestamp from DB. If data is not updating → pipeline is stuck.
+* Data quality check:- Monitor how many records fail validation. Sudden spike → upstream data issue.
+* Additionally:- We can Use dashboards (e.g., Grafana) to monitor CPU, memory, DB connections.
 
 ---
 
 ## Recovery: If the pipeline fails midway through a 10GB batch, how do you ensure "Idempotency" (no partial or duplicate data)?
 
 We ensure no duplicate or partial data even if the pipeline fails:
-Database-level safety:
-Use ON CONFLICT DO NOTHING with a composite key → prevents duplicates.
-Batch tracking (checkpointing):
+* Database-level safety:- Use ON CONFLICT DO NOTHING with a composite key → prevents duplicates.
+* Batch tracking (checkpointing):
 Before processing → mark batch as in_progress
 After success → mark as complete
 On restart → retry incomplete batches
-Transactional inserts:
-Each batch runs in a single transaction → either fully inserted or not at all.
-Offset tracking (if supported):
-Store last processed offset → resume from where it failed.
+* Transactional inserts:- Each batch runs in a single transaction → either fully inserted or not at all.
+* Offset tracking (if supported):- Store last processed offset → resume from where it failed.
 
