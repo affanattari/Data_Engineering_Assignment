@@ -92,7 +92,9 @@ At this scale, the current setup (API + ETL + single database) won’t handle th
 * Add Apache Kafka between API and ETL to handle high data volume. Data is split into partitions (e.g., by instrument), which allows parallel processing.
 * Replace simple polling with Apache Spark Structured Streaming or Apache Flink to process data in real-time with built-in fault tolerance.
 * Store data in layers:
-Hot data → fast databases like ClickHouse/TimescaleDB
+
+Hot data → fast databases like ClickHouse/TimescaleDB  
+
 Cold data → cloud storage like S3 (for analytics)
 * Use a schema registry to validate data format before processing.
 * Deduplication is handled earlier in the pipeline using streaming guarantees (exactly-once processing).
