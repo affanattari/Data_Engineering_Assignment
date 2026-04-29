@@ -91,11 +91,9 @@ SELECT * FROM market_data;
 At this scale, the current setup (API + ETL + single database) won’t handle the load. So we redesign it:
 * Add Apache Kafka between API and ETL to handle high data volume. Data is split into partitions (e.g., by instrument), which allows parallel processing.
 * Replace simple polling with Apache Spark Structured Streaming or Apache Flink to process data in real-time with built-in fault tolerance.
-* Store data in layers:
-
+* Store data in layers:  
 Hot data → fast databases like ClickHouse/TimescaleDB  
-
-Cold data → cloud storage like S3 (for analytics)
+Cold data → cloud storage like S3 (for analytics)  
 * Use a schema registry to validate data format before processing.
 * Deduplication is handled earlier in the pipeline using streaming guarantees (exactly-once processing).
 
@@ -115,10 +113,10 @@ We monitor the pipeline at 3 levels:
 
 We ensure no duplicate or partial data even if the pipeline fails:
 * Database-level safety:- Use ON CONFLICT DO NOTHING with a composite key → prevents duplicates.
-* Batch tracking (checkpointing):
-Before processing → mark batch as in_progress
-After success → mark as complete
-On restart → retry incomplete batches
+* Batch tracking (checkpointing):  
+Before processing → mark batch as in_progress  
+After success → mark as complete  
+On restart → retry incomplete batches  
 * Transactional inserts:- Each batch runs in a single transaction → either fully inserted or not at all.
 * Offset tracking (if supported):- Store last processed offset → resume from where it failed.
 
