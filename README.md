@@ -88,10 +88,7 @@ SELECT * FROM market_data;
 
 ## Scaling: How would your architecture change if the data volume increased to 1 billion events per day? (e.g., Kafka, Spark, or Cloud-native tools).
 
-1. Scaling to 1 Billion Events/Day
-
 At this scale, the current setup (API + ETL + single database) won’t handle the load. So we redesign it:
-
 Add Apache Kafka between API and ETL to handle high data volume. Data is split into partitions (e.g., by instrument), which allows parallel processing.
 Replace simple polling with Apache Spark Structured Streaming or Apache Flink to process data in real-time with built-in fault tolerance.
 Store data in layers:
@@ -104,10 +101,7 @@ Deduplication is handled earlier in the pipeline using streaming guarantees (exa
 
 ## Monitoring: How would you implement "Health Checks" to ensure the pipeline is running correctly in a production environment?
 
-2. Monitoring (Health Checks in Production)
-
 We monitor the pipeline at 3 levels:
-
 Pipeline heartbeat:
 Track the last successful run time. If the pipeline hasn’t run for a while → trigger alert.
 Data freshness check:
@@ -119,9 +113,8 @@ Additionally: We can Use dashboards (e.g., Grafana) to monitor CPU, memory, DB c
 ---
 
 ## Recovery: If the pipeline fails midway through a 10GB batch, how do you ensure "Idempotency" (no partial or duplicate data)?
-3. Recovery & Idempotency
-We ensure no duplicate or partial data even if the pipeline fails:
 
+We ensure no duplicate or partial data even if the pipeline fails:
 Database-level safety:
 Use ON CONFLICT DO NOTHING with a composite key → prevents duplicates.
 Batch tracking (checkpointing):
